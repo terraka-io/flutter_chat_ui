@@ -37,6 +37,7 @@ class Chat extends StatefulWidget {
   /// Creates a chat widget.
   const Chat({
     super.key,
+    this.onPaste,
     this.audioMessageBuilder,
     this.avatarBuilder,
     this.bubbleBuilder,
@@ -233,6 +234,9 @@ class Chat extends StatefulWidget {
 
   /// See [Input.onAttachmentPressed].
   final VoidCallback? onAttachmentPressed;
+
+  /// See [Input.onPaste].
+  final VoidCallback? onPaste;
 
   /// See [Message.onAvatarTap].
   final void Function(types.User)? onAvatarTap;
@@ -676,6 +680,7 @@ class ChatState extends State<Chat> {
                           Input(
                             isAttachmentUploading: widget.isAttachmentUploading,
                             onAttachmentPressed: widget.onAttachmentPressed,
+                            onPaste: widget.onPaste,
                             onSendPressed: widget.onSendPressed,
                             options: widget.inputOptions,
                           ),

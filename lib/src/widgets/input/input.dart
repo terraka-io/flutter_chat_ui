@@ -20,6 +20,7 @@ class Input extends StatefulWidget {
     super.key,
     this.isAttachmentUploading,
     this.onAttachmentPressed,
+    this.onPaste,
     required this.onSendPressed,
     this.options = const InputOptions(),
   });
@@ -32,6 +33,9 @@ class Input extends StatefulWidget {
 
   /// See [AttachmentButton.onPressed].
   final VoidCallback? onAttachmentPressed;
+
+  /// Will be called on [TextField] paste.
+  final VoidCallback? onPaste;
 
   /// Will be called on [SendButton] tap. Has [types.PartialText] which can
   /// be transformed to [types.TextMessage] and added to the messages list.
@@ -62,9 +66,17 @@ class _InputState extends State<Input> {
           _handleSendPressed();
         }
         return KeyEventResult.handled;
-      } else {
-        return KeyEventResult.ignored;
       }
+
+      final isControlOrMeta = HardwareKeyboard.instance.isControlPressed ||
+          HardwareKeyboard.instance.isMetaPressed;
+      if (isControlOrMeta && event.logicalKey == LogicalKeyboardKey.keyV) {
+        if (event is KeyDownEvent) {
+          widget.onPaste?.call();
+        }
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
     },
   );
 
@@ -166,6 +178,27 @@ class _InputState extends State<Input> {
                   child: Padding(
                     padding: textPadding,
                     child: TextField(
+                      contextMenuBuilder:
+                          (BuildContext context, EditableTextState state) {
+                        final buttonItems = state.contextMenuButtonItems;
+
+                        buttonItems.removeWhere(
+                          (x) => x.type == ContextMenuButtonType.paste,
+                        );
+                        final btn = ContextMenuButtonItem(
+                          onPressed: () {
+                            state.pasteText(SelectionChangedCause.toolbar);
+                            widget.onPaste?.call();
+                            state.hideToolbar();
+                          },
+                          type: ContextMenuButtonType.paste,
+                        );
+                        buttonItems.add(btn);
+                        return AdaptiveTextSelectionToolbar.buttonItems(
+                          anchors: state.contextMenuAnchors,
+                          buttonItems: buttonItems,
+                        );
+                      },
                       enabled: widget.options.enabled,
                       autocorrect: widget.options.autocorrect,
                       autofocus: widget.options.autofocus,
