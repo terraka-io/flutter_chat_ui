@@ -74,7 +74,6 @@ class _InputState extends State<Input> {
         if (event is KeyDownEvent) {
           widget.onPaste?.call();
         }
-        return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
     },
